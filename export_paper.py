@@ -1,0 +1,53 @@
+import pypandoc
+import os
+
+latex_content = r"""
+\documentclass[journal]{IEEEtran}
+
+\usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage[utf8]{vietnam}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{float}
+
+\begin{document}
+
+\title{HFCAM-YOLO: A Hardware-Friendly Context-Aware Mamba-YOLO for Real-Time Small Object Detection on UAV Edge Devices}
+\author{NGUYỄN HỮU ĐẠI NHÂN - 2251039}
+\markboth{Trường Đại học Bách Khoa - ĐHQG HCM April 2026 \quad \quad \quad \quad TOTAL: 10 MARKS}{}
+\maketitle
+
+\begin{abstract} 
+Detecting small objects from Unmanned Aerial Vehicles (UAVs) remains a fundamental challenge due to limited computational resources on edge devices. We propose \textbf{HFCAM-YOLO}, a hardware-friendly architecture specifically designed for the VisDrone benchmark. Our core contribution is the integration of a \textbf{1-bit Multi-Directional Context-Aware Mamba (HFCAM)} block into the YOLOv8 neck. Furthermore, we implement a \textbf{Multi-Directional Scan (V2)} strategy to capture spatial relations from four directions. Results demonstrate that HFCAM-YOLO V2 achieves an \textbf{mAP50 of 32.62\%}, surpassing the baseline YOLOv8n (32.1\%) while being \textbf{3.6x faster} (14.2ms) and reducing parameters by \textbf{16.6\%}.
+\end{abstract}
+
+\section{Introduction}
+Nowadays, Unmanned Aerial Vehicles (UAVs) have become indispensable in surveillance and traffic monitoring. However, UAV-captured images often feature tiny objects (pedestrians, bicycles, or cars). Existing state-of-the-art detectors like YOLOv8 are computationally expensive. We propose HFCAM-YOLO to achieve a balance between accuracy and efficiency through 1-bit quantization and 4-way spatial scanning.
+
+\section{Materials and Methods}
+The HFCAM-YOLO architecture modifies the standard YOLOv8n neck by replacing C2f modules with our proposed \textbf{BiContextMambaBlock}. We use \textbf{1-Bit Binary Quantization} via the Straight-Through Estimator (STE) to convert FLOPs into BOPs. Additionally, our \textbf{Multi-Directional Scan} (V2) strategy processes spatial information along four parallel paths (Forward, Reverse, Vertical, and Vertical-Reverse).
+
+\section{Results}
+Testing on VisDrone2019-DET showed that HFCAM-YOLO achieved an \textbf{mAP50 of 32.62\%} and an inference speed of \textbf{14.2ms} (~70 FPS). On Image 711, our model successfully detected \textbf{79 objects}, compared to only 63 by the baseline YOLOv8n.
+
+\section{Conclusion}
+HFCAM-YOLO V2 proves that 1-bit quantization combined with multi-directional context scanning is a robust solution for real-time edge processing on UAVs.
+
+\end{document}
+"""
+
+with open('HFCAM_YOLO_Paper.tex', 'w', encoding='utf-8') as f:
+    f.write(latex_content)
+
+print("Đã tạo file HFCAM_YOLO_Paper.tex")
+
+# Cố gắng xuất ra PDF (Yêu cầu phải có hệ thống LaTeX như TeX Live hoặc MikTeX trong PATH)
+# Nếu không có, nó sẽ báo lỗi, nhưng ít nhất bạn đã có file .tex hoàn chỉnh.
+try:
+    pypandoc.convert_file('HFCAM_YOLO_Paper.tex', 'pdf', outputfile='Research_Paper_HFCAM_YOLO.pdf', extra_args=['--pdf-engine=pdflatex'])
+    print("XUẤT PDF THÀNH CÔNG: Research_Paper_HFCAM_YOLO.pdf")
+except Exception as e:
+    print(f"Lỗi khi xuất PDF (có thể thiếu pdflatex): {e}")

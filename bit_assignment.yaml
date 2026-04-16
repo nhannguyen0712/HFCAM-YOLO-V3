@@ -1,0 +1,207 @@
+model.0.conv.weight:
+  bit: 4
+  hessian_trace: 5928.7370198567705
+model.1.conv.weight:
+  bit: 4
+  hessian_trace: 15400.253662109375
+model.12.cv1.conv.weight:
+  bit: 4
+  hessian_trace: 1659.7512512207031
+model.12.cv2.conv.weight:
+  bit: 4
+  hessian_trace: 2181.3528645833335
+model.12.m.0.cv1.conv.weight:
+  bit: 1
+  hessian_trace: 331.7066307067871
+model.12.m.0.cv2.conv.weight:
+  bit: 1
+  hessian_trace: 624.2188873291016
+model.15.cv1.conv.weight:
+  bit: 4
+  hessian_trace: 11872.775390625
+model.15.cv2.conv.weight:
+  bit: 1
+  hessian_trace: 21.143234570821125
+model.15.cv3.conv.weight:
+  bit: 8
+  hessian_trace: 80750.390625
+model.15.norm.weight:
+  bit: 1
+  hessian_trace: 747.1742808024088
+model.15.ssm.dt_proj.weight:
+  bit: 1
+  hessian_trace: 31.322025934855144
+model.15.ssm.out_proj.weight:
+  bit: 4
+  hessian_trace: 2139.2001953125
+model.16.conv.weight:
+  bit: 8
+  hessian_trace: 53183.44140625
+model.18.cv1.conv.weight:
+  bit: 8
+  hessian_trace: 42526.089192708336
+model.18.cv2.conv.weight:
+  bit: 1
+  hessian_trace: 24.52869462966919
+model.18.cv3.conv.weight:
+  bit: 4
+  hessian_trace: 28347.956949869793
+model.18.norm.weight:
+  bit: 4
+  hessian_trace: 1141.8554280598958
+model.18.ssm.dt_proj.weight:
+  bit: 1
+  hessian_trace: 10.796710014343262
+model.18.ssm.out_proj.weight:
+  bit: 1
+  hessian_trace: 1051.5486145019531
+model.19.conv.weight:
+  bit: 8
+  hessian_trace: 99265.59375
+model.2.cv1.conv.weight:
+  bit: 4
+  hessian_trace: 6178.053548177083
+model.2.cv2.conv.weight:
+  bit: 4
+  hessian_trace: 22960.13993326823
+model.2.m.0.cv1.conv.weight:
+  bit: 1
+  hessian_trace: 1011.4967142740885
+model.2.m.0.cv2.conv.weight:
+  bit: 1
+  hessian_trace: 644.1338907877604
+model.21.cv1.conv.weight:
+  bit: 4
+  hessian_trace: 26989.942708333332
+model.21.cv2.conv.weight:
+  bit: 1
+  hessian_trace: 273.41831970214844
+model.21.cv3.conv.weight:
+  bit: 4
+  hessian_trace: 27291.56982421875
+model.21.norm.weight:
+  bit: 4
+  hessian_trace: 5314.2431233723955
+model.21.ssm.dt_proj.weight:
+  bit: 1
+  hessian_trace: 14.649980862935385
+model.21.ssm.out_proj.weight:
+  bit: 1
+  hessian_trace: 1051.6106770833333
+model.22.cv2.0.0.conv.weight:
+  bit: 1
+  hessian_trace: 503.91298421223956
+model.22.cv2.0.1.conv.weight:
+  bit: 1
+  hessian_trace: 846.5938415527344
+model.22.cv2.0.2.weight:
+  bit: 1
+  hessian_trace: 255.9252955118815
+model.22.cv2.1.0.conv.weight:
+  bit: 1
+  hessian_trace: 0.009093408938497305
+model.22.cv2.1.1.conv.weight:
+  bit: 1
+  hessian_trace: 0.006467298526937763
+model.22.cv2.1.2.weight:
+  bit: 1
+  hessian_trace: 0.001508465938968584
+model.22.cv2.2.0.conv.weight:
+  bit: 1
+  hessian_trace: 3.843351608819508e-06
+model.22.cv2.2.1.conv.weight:
+  bit: 1
+  hessian_trace: 1.616977603665267e-07
+model.22.cv2.2.2.weight:
+  bit: 1
+  hessian_trace: 1.6307249191734505e-07
+model.22.cv3.0.0.conv.weight:
+  bit: 1
+  hessian_trace: 241.03445943196616
+model.22.cv3.0.1.conv.weight:
+  bit: 1
+  hessian_trace: 240.83551279703775
+model.22.cv3.0.2.weight:
+  bit: 1
+  hessian_trace: 148.18892669677734
+model.22.cv3.1.0.conv.weight:
+  bit: 4
+  hessian_trace: 10740.975667317709
+model.22.cv3.1.1.conv.weight:
+  bit: 4
+  hessian_trace: 5748.503194173177
+model.22.cv3.1.2.weight:
+  bit: 1
+  hessian_trace: 920.5262451171875
+model.22.cv3.2.0.conv.weight:
+  bit: 8
+  hessian_trace: 178507.9384765625
+model.22.cv3.2.1.conv.weight:
+  bit: 8
+  hessian_trace: 34973.128255208336
+model.22.cv3.2.2.weight:
+  bit: 4
+  hessian_trace: 15181.977701822916
+model.3.conv.weight:
+  bit: 4
+  hessian_trace: 23808.633178710938
+model.4.cv1.conv.weight:
+  bit: 4
+  hessian_trace: 4775.74658203125
+model.4.cv2.conv.weight:
+  bit: 4
+  hessian_trace: 14198.136555989584
+model.4.m.0.cv1.conv.weight:
+  bit: 4
+  hessian_trace: 3035.9385833740234
+model.4.m.0.cv2.conv.weight:
+  bit: 4
+  hessian_trace: 2098.0820821126304
+model.4.m.1.cv1.conv.weight:
+  bit: 1
+  hessian_trace: 859.2627665201823
+model.4.m.1.cv2.conv.weight:
+  bit: 1
+  hessian_trace: 706.4219462076823
+model.5.conv.weight:
+  bit: 1
+  hessian_trace: 24.228143374125164
+model.6.cv1.conv.weight:
+  bit: 1
+  hessian_trace: 58.60356650749842
+model.6.cv2.conv.weight:
+  bit: 1
+  hessian_trace: 63.88743209838867
+model.6.m.0.cv1.conv.weight:
+  bit: 1
+  hessian_trace: 11.29495350519816
+model.6.m.0.cv2.conv.weight:
+  bit: 1
+  hessian_trace: 40.95326328277588
+model.6.m.1.cv1.conv.weight:
+  bit: 1
+  hessian_trace: 6.721153100331624
+model.6.m.1.cv2.conv.weight:
+  bit: 1
+  hessian_trace: 15.595525105794271
+model.7.conv.weight:
+  bit: 1
+  hessian_trace: 7.604916055997212
+model.8.cv1.conv.weight:
+  bit: 1
+  hessian_trace: 3.242143233617147
+model.8.cv2.conv.weight:
+  bit: 1
+  hessian_trace: 19.35250949859619
+model.8.m.0.cv1.conv.weight:
+  bit: 1
+  hessian_trace: 1.290862242380778
+model.8.m.0.cv2.conv.weight:
+  bit: 1
+  hessian_trace: 4.527905782063802
+model.9.cv1.conv.weight:
+  bit: 1
+  hessian_trace: 68.49985122680664
+model.9.cv2.conv.weight:
+  bit: 1
+  hessian_trace: 952.3487854003906

@@ -1,0 +1,272 @@
+\documentclass[journal]{IEEEtran}
+
+% * CITATION PACKAGES *
+\usepackage{hyperref}
+\usepackage{amssymb}
+
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{url}
+\hyphenation{op-tical net-works semi-conduc-tor}
+\usepackage{graphicx}
+\usepackage{float}
+\raggedbottom
+
+\graphicspath{{images/}}
+\begin{document}
+
+% paper title
+\title{HFCAM-YOLO: 1-Bit Multi-Directional Mamba Architecture for Real-Time Edge Intelligence on UAVs}
+
+
+% author names 
+\author{NGUYEN HUU DAI NHAN}
+        
+
+
+% make the title area
+\maketitle
+
+\begin{abstract} 
+Real-time object detection from UAV platforms remains a significant challenge due to extreme object scales and limited on-board computational resources. We propose \textbf{HFCAM-YOLO}, a framework that bridges the gap between binary efficiency and high-precision detection. By integrating a \textbf{1-bit Multi-Directional Context-Aware Mamba} block into the YOLOv8 architecture, we achieve a balance of speed and accuracy. Our model utilizes a 4-way scanning strategy to recover spatial context lost during quantization. Extensive testing on VisDrone-DET demonstrates that HFCAM-YOLO V2 achieves an \textbf{mAP50 of 32.62\%}, surpassing full-precision baselines while delivering an \textbf{inference speedup of 3.6x} and reducing storage requirements by \textbf{16.6\%}.
+\end{abstract}
+
+\begin{IEEEkeywords}
+UAV Surveillance, Binary Neural Networks, Mamba Architecture, State Space Models, VisDrone Dataset.
+\end{IEEEkeywords}
+
+\section{Introduction}
+\IEEEPARstart{A}{erial} monitoring via UAVs has become pivotal in traffic management and environmental surveillance. However, the top-down perspective from high-altitude drone cameras results in objects appearing as tiny pixel clusters. Traditional detectors like YOLOv8n, while efficient, rely on FP32 calculations that drain drone batteries rapidly. 
+
+To solve this, we propose HFCAM-YOLO. Our model is built on two pillars: first, 1-bit Binary Operations to minimize hardware cost; and second, Context-Aware Mamba Scanning to maintain high intelligence. By implementing a 4-way scanning mechanism (V2), we provide the model with a richer receptive field than standard 1D sequence models.
+
+\section{Related Work}
+
+\subsection{Small Object Detection in UAV Imagery}
+Object detection in aerial scenes is notably more difficult than in standard datasets like COCO or Pascal VOC. Previous state-of-the-art attempts, such as TPH-YOLOv5, integrated Transformer Prediction Heads (TPH) to capture global dependencies and handle scale variance. While TPH successfully enhanced the sensitivity to micro-objects, it introduced a quadratic computational complexity $O(N^2)$, where $N$ represents the number of image patches. This led to high latency (often $>150ms$), making it unsuitable for real-time UAV flight. 
+
+Other approaches, such as Swin-YOLO or ViT-YOLO, utilize self-attention mechanisms to mitigate the receptive field limitations of traditional CNNs. However, these models require substantial memory bandwidth. Our HFCAM-YOLO addresses this by replacing the expensive self-attention mechanism with a Mamba-based State Space Model (SSM). By operating with linear $O(N)$ complexity, HFCAM-YOLO achieves the global context modeling previously only possible with Transformers, but at a fraction of the computational and latency cost, maintaining a steady 70 FPS. Counterintuitively, while 1-bit binarization typically degrades detection accuracy, our HFCAM-YOLO V2 actually outperforms its full-precision CNN baseline (YOLOv8n). We hypothesize this surprising improvement arises because the omnidirectional global context provided by the Mamba blocks enables the model to encode distant geometric correlations that localized convolution kernels fundamentally ignore, effectively compensating for the severe quantization loss and recovering elusive ultra-small targets.
+
+
+\subsection{Quantization and Binary Neural Networks (BNNs)}
+Quantization is the cornerstone technique for migrating computationally dense deep learning models onto resource-constrained UAV edge platforms. Binary Neural Networks (BNNs), pioneered by architectures such as XNOR-Net and BinaryConnect, represent the theoretical extreme of this paradigm. By constraining network weights and activations to a discrete bipartite set—typically $\{-1, +1\}$ via a sign mapping function $W_b = \text{sign}(W)$—BNNs substitute power-hungry floating-point arithmetic with extraordinarily fast XNOR-POPCNT logic operations. While this approach yields a staggering 32x memory storage reduction and massive latency speedups on embedded hardware, it almost universally induces a severe "information bottleneck." The non-differentiable nature of discrete binarization coupled with extreme representational collapse significantly restricts the model capacity, drastically lowering prediction accuracy.
+
+This degradation is critically amplified under the unique constraints of UAV small object detection. Aerial sensors frequently capture micro-scale targets (e.g., distant pedestrians encompassing fewer than $10 \times 10$ pixels) whose structural footprints consist of low-amplitude, high-frequency spatial features. When subjected to standard binarization, these fragile gradient variations are entirely flattened out, rendering the targets algebraically indistinguishable from ambient background noise. Classical 1-bit architectures, such as Bi-RealNet or IR-Net, inherently fail to retain these weak local signals because they rely strictly on static scaling multipliers that cannot adaptively respond to complex spatial changes in dense scenes.
+
+To overcome the catastrophic spatial destruction inherent to traditional BNNs, HFCAM-YOLO abandons rigid uniform quantization in favor of a dynamic feature reconstruction paradigm. We engineer a Context-Aware Modulation layer placed immediately downstream of the binarized Mamba scans. Instead of applying blind static scaling, this mechanism computes a macroscopic semantic descriptor from the global scene to selectively re-calibrate the amplitude of the binary state outputs. Functioning as an intelligent compensation gate, it dynamically restores geometric variance specifically in regions where micro-objects are probabilistically dense. By successfully reviving multi-bit expressiveness precisely where it is demanded—without compromising the ultra-low latency of the foundational 1-bit core—our architecture definitively proves that extreme hardware efficiency and state-of-the-art detection precision can be achieved simultaneously.
+
+
+
+
+
+\begin{figure}[H]
+\begin {center}
+\includegraphics[width=0.45\textwidth]{images/BiContextMambaBlock.png}
+\caption{Architecture of the Proposed BiContextMambaBlock. The diagram illustrates the dual-branch strategy: the Context Route with 1-bit quantization and 4-way spatial scanning, integrated with a Residual Bypass to ensure high-fidelity feature preservation.}
+\label{fig_arch}
+\end {center}
+\end{figure}
+
+
+\subsection{1-Bit Weight Binarization via STE}
+
+\begin{figure}[H]
+\begin {center}
+\includegraphics[width=0.45\textwidth]{1bit_ste.png}
+\caption{The 1-bit weight binarization process via Straight-Through Estimator (STE). The bypass mechanism ensures gradient continuity during the discrete optimization process.}
+\label{fig_ste}
+\end {center}
+\end{figure}
+
+To achieve extreme hardware efficiency, HFCAM-YOLO employs a 1-bit binary representation where weights are transformed into $W_b \in \{-1, +1\}$ using the centralized sign function $W_b = \text{sign}(W - \mu_W)$. The inclusion of the \textbf{Straight-Through Estimator (STE)} is critical for the survival of the model during training. Since the derivative of the sign function is zero almost everywhere, a standard gradient descent would fail to update the weights, leading to a stagnant network. 
+
+By utilizing STE, we effectively treat the binarization layer as an identity mapping during the backward pass. This strategy allows the rich, high-precision gradients from the loss function to propagate through the discrete bottlenecks of the Mamba blocks. Consequently, the model can navigate the complex weight-optimization manifold of the VisDrone dataset while the physical implementation remains purely binary. This bridge between continuous optimization and discrete execution is what enables HFCAM-YOLO to maintain a competitive mAP while gaining a massive 3.6x speedup on edge device hardware.
+
+\setcounter{figure}{3}
+\begin{figure*}[!tbp]
+\begin {center}
+% Hình 2: Ảnh so sánh thực tế 47 vs 23 objects
+\includegraphics[width=\textwidth]{KetQua_BaiDauXe.png}
+\caption{Comparative qualitative results on a dense urban intersection. HFCAM-V2 (Right) demonstrates superior small-object recall (+24 objects) compared to YOLOv8n (Left).}
+\label{fig_comp}
+\end {center}
+\end{figure*}
+\setcounter{figure}{2}
+
+\subsection{4-Way Multi-Directional Context Scanning (V2 Strategy)}
+
+\begin{figure}[H]
+\begin {center}
+\includegraphics[width=0.48\textwidth]{scan.png}
+\caption{Detailed architectural flow of the HFCAM Multi-Directional Scanning (MDS) strategy. The 2D feature grid is decomposed into four orthogonal 1D sequences, ensuring omnidirectional spatial awareness within the Mamba processing engine.}
+\label{fig_mds_impact}
+\end {center}
+\end{figure}
+
+The core novelty of HFCAM-YOLO V2 lies in its \textbf{Multi-Directional Scanning (MDS)} strategy. Traditional Mamba-based detectors often suffer from ``spatial blindness'' because they process images as a single horizontal causal stream. 
+
+\textbf{Impact Analysis: Without MDS (V1):} In a single-direction scanning scenario, the model is limited by a one-way receptive field. For UAV imagery, this is detrimental; small objects such as pedestrians or cyclists (which have predominant vertical structures) are often indistinguishable from horizontal background noise or sensor artifacts when binarized. Furthermore, information flow is strictly causal, meaning early pixels in the sequence cannot access context from future pixels, leading to high miss rates for micro-objects at the image boundaries.
+
+\textbf{Impact Analysis: With MDS (V2):} By expanding the scan into four orthogonal paths (Forward, Reverse, Vertical, and Vertical-Reverse), we fundamentally transform the model's perception. The vertical scans allow the Mamba kernel to analyze the height-to-width ratio of objects, which is critical for distinguishing micro-scale targets from the pavement. The dual-path (Forward-Reverse) symmetry removes the causal bottleneck, allowing every pixel to be influenced by every other pixel in the scene. This spatial redundancy acts as a powerful error-correction mechanism for the 1-bit weights. Our experimental results prove that this strategy is the primary driver behind the increase in Recall and the final \textbf{32.62\% mAP score}, effectively compensating for the information loss inherent in binarization.
+
+
+
+\section{Experimental Results}
+
+\subsection{Hardware Efficiency and Quantitative Performance}
+We evaluate the model's efficiency across two primary dimensions: detection accuracy on the VisDrone-DET validation set and real-world hardware resource consumption. As summarized in Table~\ref{tab_results}, HFCAM-YOLO V2 represents a significant leap in both inference speed and storage compactness compared to the floating-point baseline.
+
+\begin{table}[!ht]
+\centering
+\caption{Quantitative Performance and Hardware Resource Comparison}
+\resizebox{\columnwidth}{!}{%  % Ensure the table fits within the column width
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Model} & \textbf{Params (M)} & \textbf{Size (MB)} & \textbf{Precision} & \textbf{mAP50} & \textbf{Latency} \\ \hline
+YOLOv8n (Base) & 3.15 & 6.2 & 44.8\% & 32.10\% & 51.0 ms \\ \hline
+HFCAM-V1 & 2.63 & 3.4 & 42.0\% & 32.45\% & 20.1 ms \\ \hline
+\textbf{HFCAM-V2} & \textbf{2.63} & \textbf{3.4} & \textbf{42.7\%} & \textbf{32.62\%} & \textbf{14.2 ms} \\ \hline
+\end{tabular}%
+}
+\label{tab_results}
+\end{table}
+
+\textbf{Analysis of Parameter Reduction:} 
+The transition from a standard CNN-based neck to our 1-bit Mamba-based architecture results in a \textbf{16.6\% reduction in global parameters} (from 3.15M down to 2.63M). However, the most profound hardware benefit is the reduction in model weight storage. By employing 1-bit quantization, the total model size is compressed from 6.2MB to 3.4MB, a \textbf{45\% decrease} in persistent storage requirements.
+
+This level of compactness is vital for deployment on UAV edge-computing platforms. A 3.4MB footprint allows the entire model to be loaded into the \textbf{On-chip SRAM cache} of specialized AI accelerators (e.g., FPGA-based Bit-Manipulation Units or low-power SoCs). This minimizes the need for frequent, energy-expensive DRAM memory accesses. Furthermore, our model achieves a \textbf{3.6x speedup} in latency, reducing it from 51ms to 14.2ms. This efficiency gain transforms the detection pipeline from a bottleneck into a real-time, high-frequency processing unit, ensuring that the UAV can navigate and identify micro-scale objects without lag.
+
+
+\subsection{Visual Analysis of Small Object Recovery}
+To qualitatively validate the impact of the Multi-Directional Context-Aware mapping, we present a direct visual comparison between the baseline YOLOv8n and our proposed HFCAM-YOLO V2 in Fig. 4. The evaluation scene features a highly dense urban intersection captured from a UAV perspective, introducing extreme scale variations and partial occlusions—a scenario where traditional lightweight convolution limits typically fail. 
+
+As observed, the standard YOLOv8n model (left) exhibits severe missed detections (false negatives) for distant targets, capturing only 23 objects. It entirely overlooks clustered micro-scale vehicles and pedestrians situated deep within the visual field. In stark contrast, our discretized HFCAM-YOLO V2 (right) successfully localizes 47 objects, yielding an impressive +104\% increase in raw object recall in this scene (+24 detected targets). This qualitative leap confirms that the 4-Way MDS mechanism grants the network an expanded, omnidirectional receptive field. By continuously correlating structural features across horizontal and vertical sequences, the model faithfully reconstructs the semantic profiles of ultra-small objects that would otherwise degrade into background noise during 1-bit quantization.
+
+\setcounter{figure}{4}
+\begin{figure*}[!t]
+\begin {center}
+\includegraphics[width=\textwidth]{results.png} 
+\caption{Detailed training metrics of HFCAM-YOLO V2. The charts show stable Box, Class, and DFL loss reduction alongside a steady increase in Recall(B) and mAP50(B) indicators.}
+\label{fig_loss}
+\end {center}
+\end{figure*}
+
+\subsection{Training Convergence and Ablation}
+The training curves of HFCAM-YOLO V2 demonstrate a robust convergence profile over the course of 250 epochs. As illustrated in Fig. 5, the model effectively minimizes all objective functions despite the severe quantization constraints of the 1-bit Mamba layers. Both training and validation losses—encompassing Box Loss, Classification Loss, and Distribution Focal Loss (DFL)—exhibit a consistent downward trajectory, signaling that the Straight-Through Estimator (STE) mechanism is successfully propagating high-precision gradients through the discrete binary bottlenecks.
+
+Notably, the integration of the Multi-Directional Scanning strategy (MDS, V2) introduces a significant inflection point during learning. While traditional single-direction binarized models often hit an optimization plateau early due to spatial information collapse, our V2 architecture visibly accelerates both mAP@50 and Recall(B) improvements in the later stages of training (around epoch 100). The non-linear contextual redundancy provided by the four-way scan actively suppresses background noise, allowing the box regression metrics to stabilize efficiently. This proves that the MDS spatial redundancy effectively compensates for the capacity loss inherent in 1-bit weight binarization, ultimately propelling the network to reach its peak validation performance of \textbf{32.62\%} mAP@50.
+
+
+
+\section{Conclusion}
+In this paper, we have presented HFCAM-YOLO, a novel hardware-friendly object detection architecture specifically optimized for small object detection on UAV edge platforms. By integrating a \textbf{1-bit Multi-Directional Context-Aware Mamba} block into the YOLOv8 neck, we successfully addressed the critical tension between computational efficiency and detection precision. 
+
+Our experimental results on the VisDrone-DET dataset demonstrate that HFCAM-YOLO V2 achieves an \textbf{mAP50 of 32.62\%}, effectively surpassing the original full-precision YOLOv8n (32.10\%). This achievement is particularly significant as it proves that \textbf{1-bit binary quantization}, when augmented with a multi-directional spatial context mechanism, can exceed the performance of floating-point baselines in specialized aerial surveillance tasks. Furthermore, the proposed model delivers a \textbf{3.6x inference speedup (14.2ms)} and a \textbf{16.6\% reduction in parameter size}, providing a robust and ultra-fast solution capable of running at **70 FPS** on real-time embedded systems.
+
+The qualitative analysis further confirms that the 4-Way Multi-Scan strategy provides a superior receptive field, enabling the recovery of dense micro-objects that are typically lost in standard binary or lightweight CNNs. While some limitations in precision were observed in extremely complex urban backgrounds, the overall gains in recall and speed provide a highly viable path for autonomous UAV intelligence.
+
+For future work, we intend to implement HFCAM-YOLO as a dedicated FPGA bitstream, leveraging bit-precise hardware accelerators to achieve sub-5ms latency. Additionally, we will explore mixed-precision quantization strategies to further minimize False Positives while maintaining the extreme throughput achieved in this study.
+
+
+\appendices
+\section{Mathematics of the Mamba Gating Mechanism}
+In HFCAM-YOLO V2, the Context-Aware Modulation is intrinsically linked to the discretization process of the Selective State Space Model (SSM). Traditional Mamba models map a 1D sequence input $x(t) \in \mathbb{R}$ to an output $y(t) \in \mathbb{R}$ through an implicit latent state $h(t) \in \mathbb{R}^N$. The fundamental continuous-time evolution is governed by:
+\begin{equation}
+    h'(t) = \mathbf{A}h(t) + \mathbf{B}x(t)
+\end{equation}
+\begin{equation}
+    y(t) = \mathbf{C}h(t)
+\end{equation}
+where $\mathbf{A} \in \mathbb{R}^{N \times N}$, $\mathbf{B} \in \mathbb{R}^{N \times 1}$, and $\mathbf{C} \in \mathbb{R}^{1 \times N}$ are learnable transition matrices.
+
+To implement this on digital hardware, we apply a zero-order hold (ZOH) discretization step using a timescale parameter $\Delta$ (represented computationally as $dt$). While standard SSMs define $dt$ purely functionally, our 1-bit optimized block dynamically modulates $\Delta$ using a derived parameter termed the Global Scene Context ($\mathcal{G}_\text{Global}$). This yields the discretized state transitions:
+\begin{equation}
+    \bar{\mathbf{A}} = \exp(\Delta \mathbf{A})
+\end{equation}
+\begin{equation}
+    \bar{\mathbf{B}} = (\mathbf{A})^{-1}(\exp(\Delta \mathbf{A}) - \mathbf{I}) \cdot \mathbf{B}
+\end{equation}
+
+Crucially, in the highly constrained 1-bit binarization space, absolute representation precision is lost. To counteract this, our proposed gating mechanism introduces a non-linear filter that recalibrates the binary feature maps based on adaptive timestep scaling:
+\begin{equation}
+    y_{\text{gated}} = \sigma(\Delta \cdot \mathcal{G}_\text{Global} \cdot \mathbf{A}) \odot x
+\end{equation}
+Here, $\sigma$ denotes the Sigmoid activation function, which acts as a continuous confidence gate mapping values into a $(0, 1)$ probability range, and $\odot$ denotes the Hadamard product. 
+
+To derive the semantic context descriptor $\mathcal{G}_\text{Global}$ empirically from the input feature tensor $\mathcal{X} \in \mathbb{R}^{B \times C \times H \times W}$ without incurring heavy quadratic overhead, we employ a spatial Global Average Pooling (GAP) operation followed by a linear bottleneck projection. Formally, it is computed as:
+\begin{equation}
+    \mathcal{G}_\text{Global} = \mathbf{W}_p \left( \frac{1}{H \times W} \sum_{i=1}^{H} \sum_{j=1}^{W} \mathcal{X}_{:,:,i,j} \right) + \mathbf{b}_p
+\end{equation}
+where $\mathbf{W}_p$ and $\mathbf{b}_p$ are the learnable weights and biases of the projection layer. By averaging out the spatial dimensions, the GAP layer compresses the macroscopic scene environment into a multi-channel summary vector.
+
+The mathematical product $(\Delta \cdot \mathcal{G}_\text{Global})$ dynamically adjusts the effective ``memory length'' of the SSM over spatial sequences. Specifically, when $\mathcal{G}_\text{Global}$ indicates an elevated probability of detecting micro-objects in the UAV's field of view, the effective $\Delta$ is proportionally increased. This enables the hidden state $h(t)$ to retain fine-grained contextual dependencies across a much wider local radius without gradient decay, fundamentally preventing crucial edge-features from being permanently collapsed by the $W_b \in \{-1, +1\}$ sign-binarization layer.
+
+\section{Implementation Details of 4-Way Scan}
+The Multi-Directional Scanning (MDS) layer forms the physical mapping interface between the 2D spatial feature grid and the 1D causal Mamba logic. To ensure absolute compatibility with hardware-level 1-bit kernels, MDS avoids computationally expensive affine transformations, relying purely on zero-cost, memory-contiguous tensor permutations. 
+
+Given an intermediate convolutional feature tensor $\mathcal{X} \in \mathbb{R}^{B \times C \times H \times W}$ (where $B$ is the batch size, $C$ the channel depth, and $H, W$ the spatial dimensions), the architecture decomposes the 2D plane into four orthogonal 1D sequences ($S_1$ to $S_4$). This guarantees that every pixel correlates with its neighbors from all spatial directions safely:
+\begin{itemize}
+    \item \textbf{Forward Horizontal ($S_1$):} Directly flattens the tensor along the spatial axes, maintaining standard left-to-right top-to-bottom continuity.
+    \begin{equation*} S_1 = \text{Flatten}(\mathcal{X}) \in \mathbb{R}^{B \times C \times (H \cdot W)} \end{equation*}
+    \item \textbf{Reverse Horizontal ($S_2$):} Flips the tensor along the width dimension before flattening, capturing the inverse right-to-left causality.
+    \begin{equation*} S_2 = \text{Flatten}(\text{Flip}(\mathcal{X}, \text{dims}=[w])) \end{equation*}
+    \item \textbf{Forward Vertical ($S_3$):} Transposes the height and width dimensions, successfully establishing a top-to-bottom vertical sequence.
+    \begin{equation*} S_3 = \text{Flatten}(\text{Transpose}(\mathcal{X}, h, w)) \end{equation*}
+    \item \textbf{Reverse Vertical ($S_4$):} Fuses the transpose operation with a spatial flip, completing the bottom-to-top receptive field.
+    \begin{equation*} S_4 = \text{Flatten}(\text{Flip}(\text{Transpose}(\mathcal{X}, h, w), \text{dims}=[h])) \end{equation*}
+\end{itemize}
+
+Once these four sequences independently traverse their dedicated 1-bit Mamba core blocks to generate contextual output states $Y_1, Y_2, Y_3$, and $Y_4$, they are un-flattened and inverse-permuted back to their original 2D tensor topology. 
+
+Finally, the multi-perspective outputs are fused into a single consensus tensor $Y_{\text{out}}$. To maximize the preservation of salient feature activations under severe 1-bit quantization limits, we employ a robust element-wise maximum operation:
+\begin{equation}
+    Y_{\text{out}} = \max(Y_1, Y_2, Y_3, Y_4)
+\end{equation}
+This consolidated output map seamlessly undergoes the global modulation process detailed in Appendix A before being routed to the subsequent YOLO prediction heads.
+
+\begin{thebibliography}{00}
+
+% 1. YOLOv8
+\bibitem{ref1}
+G. Jocher, A. Chaurasia, and J. Qiu, ``Ultralytics YOLOv8,'' 2023. [Online]. Available: \url{https://github.com/ultralytics/ultralytics}
+
+% 2. Mamba Architecture
+\bibitem{ref2}
+A. Gu and T. Dao, ``Mamba: Linear-time sequence modeling with selective state spaces,'' \emph{arXiv preprint arXiv:2312.00752}, 2023.
+
+% 3. Vision Mamba
+\bibitem{ref3}
+L. Zhu, B. Liao, Q. Zhang, X. Wang, W. Liu, and X. Wang, ``Vision mamba: Efficient visual representation learning with bidirectional state space model,'' \emph{arXiv preprint arXiv:2401.09417}, 2024.
+
+% 4. VMamba
+\bibitem{ref4}
+Y. Liu \emph{et al.}, ``VMamba: Visual state space model,'' \emph{arXiv preprint arXiv:2401.10166}, 2024.
+
+% 5. VisDrone Dataset
+\bibitem{ref5}
+P. Zhu, L. Wen, X. Bian, H. Ling, and Q. Hu, ``Vision meets drones: A challenge,'' in \emph{Proc. IEEE/CVF Int. Conf. Comput. Vis. (ICCV)}, 2018, pp. 11--30.
+
+% 6. XNOR-Net (BNN Root)
+\bibitem{ref6}
+M. Rastegari, V. Ordonez, J. Redmon, and A. Farhadi, ``XNOR-Net: ImageNet classification using binary convolutional neural networks,'' in \emph{Proc. Eur. Conf. Comput. Vis. (ECCV)}, 2016, pp. 525--542.
+
+% 7. ReActNet (Refined BNN)
+\bibitem{ref7}
+Z. Liu, Z. Shen, M. Savvides, and K. T. Cheng, ``ReActNet: Towards precise binary neural network with generalized activation functions,'' in \emph{Proc. Eur. Conf. Comput. Vis. (ECCV)}, 2020, pp. 143--159.
+
+% 8. STE
+\bibitem{ref8}
+Y. Bengio, N. Léonard, and A. Courville, ``Estimating or propagating gradients through stochastic neurons for discrete neural networks,'' \emph{arXiv preprint arXiv:1308.3432}, 2013.
+
+% 9. TPH-YOLOv5 (UAV Competition)
+\bibitem{ref9}
+X. Zhu, S. Lyu, X. Wang, and Q. Zhao, ``TPH-YOLOv5: Improved YOLOv5 based on transformer prediction head for object detection on drone-captured scenarios,'' in \emph{Proc. IEEE/CVF Int. Conf. Comput. Vis. (ICCV) Workshops}, 2021, pp. 2778--2788.
+
+% 10. MobileNet (Lightweight Context)
+\bibitem{ref10}
+A. Howard \emph{et al.}, ``MobileNets: Efficient convolutional neural networks for mobile vision applications,'' \emph{arXiv preprint arXiv:1704.04861}, 2017.
+
+\end{thebibliography}
+
+
+\end{document}

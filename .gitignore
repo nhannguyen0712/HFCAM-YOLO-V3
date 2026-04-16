@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Datasets (Extremely heavy)
+datasets/
+
+# Weights (Model files are too heavy for GitHub)
+*.pt
+*.onnx
+
+# Thư viện Ultralytics gốc (Chỉ nên giữ lại các file code custom của mình)
+ultralytics/
+
+# Báo cáo và file dịch LaTex rác
+*.log
+*.aux
+*.out
+*.gz
+*.pdf
+
+# Hình ảnh (Trừ các hình ảnh sơ đồ kiến trúc quan trọng)
+*.jpg
+*.png
+!KetQua_*.png
+!hfcam_*.png
+!mamba_*.png
+!KetQua_*.jpg
+
+# System
+.vscode/
+.idea/
+.DS_Store
